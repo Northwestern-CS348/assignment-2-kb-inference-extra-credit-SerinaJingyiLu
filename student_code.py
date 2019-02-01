@@ -140,9 +140,178 @@ class KnowledgeBase(object):
         Returns:
             string explaining hierarchical support from other Facts and rules
         """
+        string = ""
+
+        if isinstance(fact_or_rule, Fact):
+            if fact_or_rule in self.facts:
+                string += "fact: "
+                string += str(fact_or_rule.statement)
+                string += "\n"
+                string += self.kb_helper(fact_or_rule, "", 1)[0]
+            else:
+                string = "Fact is not in the KB"
+
+        elif isinstance(fact_or_rule, Rule):
+            if fact_or_rule in self.rules:
+                string += "rule: ("
+                string_2 = ""
+                for statement in fact_or_rule.lhs:
+                    string_2 += str(statement)
+                    string_2 += ", "
+                string_2 = string_2[0:-2]
+                string += string_2
+                string += ") -> "
+                string += str(fact_or_rule.rhs)
+                string += "\n"
+                string += self.kb_helper(fact_or_rule, "", 1)[0]
+            else:
+                string = "Rule is not in the KB";
+
+
+        
+
+
+        return string
+
         ####################################################
         # Student code goes here
 
+    def kb_helper(self, fact_or_rule, string, times):
+        """
+        Recursively print the supporting fact and rule if the currenct fact or rule is not asserted
+        
+        Args:
+             fact_or_rule (Fact or Rule) - Fact or rule to be explained
+        
+        Returns:
+             string explaining hierarchical support from other Facts and rules
+        """
+
+        space = "  "
+
+
+        
+        if isinstance(fact_or_rule, Fact):
+           ind = self.facts.index(fact_or_rule)
+
+           index=0
+           while index<len(self.facts[ind].supported_by):
+
+
+               string += space * times
+
+               string += "SUPPORTED BY\n"
+               times = times + 1
+               string += space * times
+               string += "fact: "
+               string += str(self.facts[ind].supported_by[index][0].statement)
+               if self.facts[ind].supported_by[index][0].asserted:
+                  string += " ASSERTED\n"
+               else:
+                  string += "\n"
+
+               string += space * times
+               string += "rule: ("
+               string_2 = ""
+               for statement in self.facts[ind].supported_by[index][1].lhs:
+                   string_2 += str(statement)
+                   string_2 += ", "
+               string_2 = string_2[0:-2]
+               string += string_2
+               string += ") -> "
+               string += str(self.facts[ind].supported_by[index][1].rhs)
+               if self.facts[ind].supported_by[index][1].asserted:
+                  string += " ASSERTED\n"
+               else:
+                  string += "\n"
+
+               add_times = 0
+
+               if not self.facts[ind].supported_by[index][0].asserted:
+                  times = times + 1
+                  add_times = 1
+                  string, times= self.kb_helper(self.facts[ind].supported_by[index][0],string, times)
+               if not self.facts[ind].supported_by[index][1].asserted:
+                  if not add_times:
+                      times = times + 1
+                  string, times = self.kb_helper(self.facts[ind].supported_by[index][1],string, times)
+
+               index = index + 1
+
+               if index < len(self.facts[ind].supported_by):
+                   times = times - 1
+               else:
+                   times = times - 2
+
+
+
+
+
+
+        elif isinstance(fact_or_rule, Rule):
+
+            ind = self.rules.index(fact_or_rule)
+
+            index = 0
+            while index < len(self.rules[ind].supported_by):
+
+
+
+                string += space * times
+
+                string += "SUPPORTED BY\n"
+
+
+                times = times + 1
+                string += space * times
+                string += "fact: "
+                string += str(self.rules[ind].supported_by[index][0].statement)
+                if self.rules[ind].supported_by[index][0].asserted:
+                    string += " ASSERTED\n"
+                else:
+                    string += "\n"
+                string += space * times
+                string += "rule: ("
+                string_2 = ""
+                for statement in self.rules[ind].supported_by[index][1].lhs:
+                    string_2 += str(statement)
+                    string_2 += ", "
+                string_2 = string_2[0:-2]
+                string += string_2
+                string += ") -> "
+                string += str(self.rules[ind].supported_by[index][1].rhs)
+
+                if self.rules[ind].supported_by[index][1].asserted:
+                    string += " ASSERTED\n"
+                else:
+                    string += "\n"
+
+                add_times = 0
+
+                if not self.rules[ind].supported_by[index][0].asserted:
+
+                    times = times + 1
+                    add_times = 1
+                    string,times = self.kb_helper(self.rules[ind].supported_by[index][0], string, times)
+                if not self.rules[ind].supported_by[index][1].asserted:
+                    if not add_times:
+                        times = times + 1
+                    string, times = self.kb_helper(self.rules[ind].supported_by[index][1], string, times)
+                index = index + 1
+
+                if index < len(self.rules[ind].supported_by):
+                    times = times - 1
+                else:
+
+                    times = times - 2
+
+
+        return string, times
+    
+
+    
+
+            
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
