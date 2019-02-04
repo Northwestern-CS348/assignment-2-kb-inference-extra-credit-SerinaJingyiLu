@@ -146,7 +146,12 @@ class KnowledgeBase(object):
             if fact_or_rule in self.facts:
                 string += "fact: "
                 string += str(fact_or_rule.statement)
-                string += "\n"
+
+                ind = self.facts.index(fact_or_rule)
+                if (self.facts[ind].asserted):
+                    string += " ASSERTED\n"
+                else:
+                    string += "\n"
                 string += self.kb_helper(fact_or_rule, "", 1)[0]
             else:
                 string = "Fact is not in the KB"
@@ -162,13 +167,18 @@ class KnowledgeBase(object):
                 string += string_2
                 string += ") -> "
                 string += str(fact_or_rule.rhs)
-                string += "\n"
+                ind = self.rules.index(fact_or_rule)
+                if (self.rules[ind].asserted):
+                    string += " ASSERTED\n"
+                else:
+                    string += "\n"
+
                 string += self.kb_helper(fact_or_rule, "", 1)[0]
             else:
                 string = "Rule is not in the KB";
 
 
-        
+        #print string
 
 
         return string
